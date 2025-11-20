@@ -1,6 +1,7 @@
 import os
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.callbacks import CheckpointCallback
 from envs.racing_env import RacingEnv
 
 def make_env():
@@ -8,6 +9,8 @@ def make_env():
 
 def main():
     env = DummyVecEnv([make_env])  # 1 paralelní env na start
+
+
 
     model = PPO(
         "MlpPolicy", env,
@@ -24,12 +27,14 @@ def main():
         tensorboard_log="data/tb"
     )
 
-    total = 400_000
+    total = 900_000
+    ckpt_cb = CheckpointCallback(save_freq=50_000, save_path="data/models/ckpts", name_prefix="ppo_step")
+    model.learn(total_timesteps=total, callback=ckpt_cb)
     model.learn(total_timesteps=total)
 
     os.makedirs("data/models", exist_ok=True)
-    model.save("data/models/ppo_racing_env_v1")
-    print("Model saved to data/models/ppo_racing_env_v1.zip")
+    model.save("data/models/ppo_rect_v1")
+    print("Model saved to data/models/ppo_rect_v1.zip")
 
 if __name__ == "__main__":
     main()
